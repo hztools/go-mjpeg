@@ -1,2 +1,5 @@
 # hz.tools/mjpeg
 
+This package implements support of mjpeg / M-JPEG (or "Motion JPEG"), a
+fairly strightforward protocol where every frame of a video stream is encoded
+as a standalone JPEG, streamed to the client.
