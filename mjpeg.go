@@ -58,9 +58,12 @@ func (s *Stream) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	))
 	w.WriteHeader(200)
 
+	clock := time.NewTicker(s.opts.FrameDuration)
+	defer clock.Stop()
+
 	for {
 		select {
-		case <-time.After(s.opts.FrameDuration):
+		case <-clock.C:
 			w, err := mw.CreatePart(textproto.MIMEHeader{
 				"Content-Type": []string{"image/jpeg"},
 			})
