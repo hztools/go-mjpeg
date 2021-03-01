@@ -39,9 +39,10 @@ import (
 // This is thread-safe; any client may update or call methods on this object,
 // and that will make its way out to all clients.
 type Stream struct {
-	opts Options
-	lock *sync.RWMutex
-	buf  *bytes.Buffer
+	opts  Options
+	lock  *sync.RWMutex
+	frame *int
+	buf   *bytes.Buffer
 }
 
 // ServeHTTP will handle an HTTP request.
@@ -60,20 +61,25 @@ func (s *Stream) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	clock := time.NewTicker(s.opts.FrameDuration)
 	defer clock.Stop()
+	frame := -1
 
 	for {
 		select {
 		case <-clock.C:
-			w, err := mw.CreatePart(textproto.MIMEHeader{
+			s.lock.RLock()
+			if *s.frame == frame {
+				s.lock.RUnlock()
+				continue
+			}
+			w, _ := mw.CreatePart(textproto.MIMEHeader{
 				"Content-Type": []string{"image/jpeg"},
 			})
-			if err != nil {
-				// Log this
-				return
-			}
+			// We ignore error here, since we'll attempt to write, even
+			// if it's giving us crap, since the http.Request context is
+			// what will terminate our goroutine.
 
-			s.lock.RLock()
 			w.Write(s.buf.Bytes())
+			frame = *s.frame
 			s.lock.RUnlock()
 		case <-s.opts.Context.Done(): // Parent context is done.
 			return
@@ -94,6 +100,7 @@ func (s *Stream) Update(i image.Image) error {
 	if err := jpeg.Encode(s.buf, i, nil); err != nil {
 		return err
 	}
+	*s.frame = *s.frame + 1
 
 	// TODO(paultag): Copy s.buf.Bytes out to a buffer?
 
@@ -124,10 +131,12 @@ type Options struct {
 // NewStreamWithOptions will return a new Stream object, with the options
 // specified by the caller.
 func NewStreamWithOptions(opts Options) *Stream {
+	frame := 0
 	return &Stream{
-		opts: opts,
-		lock: &sync.RWMutex{},
-		buf:  &bytes.Buffer{},
+		frame: &frame,
+		opts:  opts,
+		lock:  &sync.RWMutex{},
+		buf:   &bytes.Buffer{},
 	}
 }
 
