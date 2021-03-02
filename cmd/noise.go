@@ -2,6 +2,7 @@ package main
 
 import (
 	"image"
+	"log"
 	"math/rand"
 	"net/http"
 	"time"
@@ -29,5 +30,6 @@ func main() {
 	}()
 
 	http.Handle("/", stream)
-	http.ListenAndServe("0.0.0.0:8888", nil)
+	log.Printf("Listening for requests to http://localhost:8888")
+	http.ListenAndServe("127.0.0.1:8888", nil)
 }
