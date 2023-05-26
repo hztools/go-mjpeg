@@ -1,4 +1,4 @@
-// {{{ Copyright (c) Paul R. Tagliamonte <paul@k3xec.com>, 2021
+// {{{ Copyright (c) Paul R. Tagliamonte <paul@k3xec.com>, 2023
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -18,12 +18,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE. }}}
 
-// Package mjpeg implements support for mjpeg (sometimes M-JPEG) video streams.
-//
-// Each frame of the stream is sent as an encoded JPEG. This, while it has
-// quite a bit of overhead, is simple to work with both from a client and server
-// point of view. Clients update the stream frame-by-frame with a golang
-// image.Image.
+// Package mjpeg implements support for encoding M-JPEG (Motion JPEG) files
+// over HTTP.
 package mjpeg
 
 // vim: foldmethod=marker
